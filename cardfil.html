@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Online Store</title>
+    <link rel="stylesheet" href="styles.css">
+
+    <style>
+        /* Add your styles here */
+        /* ... (styles remain the same) ... */
+    </style>
+</head>
+<body>
+    <h1>Product Catalog</h1>
+    <div class="products">
+        <div class="product">
+            <img src="product1.jpg" alt="Product 1">
+            <h3>Product 1</h3>
+            <p>$10.00</p>
+            <button class="addToCartBtn" data-id="1">Add to Cart</button>
+        </div>
+        <!-- Add more products as needed -->
+    </div>
+
+    <div id="cartModal" class="modal">
+        <div class="modal-content">
+          <span class="close">&times;</span>
+          <h2>Your Cart</h2>
+          <ul id="cartItemsModal" class="cart-items"></ul>
+          <p id="cartTotalModal" class="cart-total">Total: $0.00</p>
+        </div>
+    </div>
+      
+    <!-- Button to open the cart modal -->
+    <button id="viewCartBtn" onclick="window.location.href = 'cart.html';">View Cart</button>
+
+
+    <script>
+      // cart.js
+      document.addEventListener('DOMContentLoaded', function() {
+          const addToCartButtons = document.querySelectorAll('.addToCartBtn');
+          const cartItemsModal = document.getElementById('cartItemsModal');
+          const cartTotalModal = document.getElementById('cartTotalModal');
+          const cart = JSON.parse(localStorage.getItem('cart')) || {};
+  
+          addToCartButtons.forEach(button => {
+              button.addEventListener('click', function() {
+                  const itemId = button.dataset.id;
+                  if (cart[itemId]) {
+                      cart[itemId].quantity++;
+                  } else {
+                      cart[itemId] = {
+                          name: 'Product ' + itemId,
+                          price: 10.00,
+                          quantity: 1
+                      };
+                  }
+                  localStorage.setItem('cart', JSON.stringify(cart));
+                  updateCartModal();
+              });
+          });
+  
+          function updateCartModal() {
+              cartItemsModal.innerHTML = '';
+              let total = 0;
+  
+              for (const itemId in cart) {
+                  const cartItem = cart[itemId];
+                  const li = document.createElement('li');
+                  li.innerHTML = `
+                      <span class="item-name">${cartItem.name}</span>
+                      <span class="item-price">$${(cartItem.price * cartItem.quantity).toFixed(2)}</span>
+                      <button class="decreaseBtn" data-id="${itemId}">-</button>
+                      <span class="item-quantity">${cartItem.quantity}</span>
+                      <button class="increaseBtn" data-id="${itemId}">+</button>
+                      <button class="removeBtn" data-id="${itemId}">Remove</button>
+                  `;
+  
+                  total += cartItem.price * cartItem.quantity;
+  
+                  cartItemsModal.appendChild(li);
+              }
+  
+              cartTotalModal.textContent = 'Total: $' + total.toFixed(2);
+  
+              const decreaseButtons = document.querySelectorAll('.decreaseBtn');
+              const increaseButtons = document.querySelectorAll('.increaseBtn');
+              const removeButtons = document.querySelectorAll('.removeBtn');
+  
+              decreaseButtons.forEach(decreaseButton => {
+                  decreaseButton.addEventListener('click', function() {
+                      const itemId = decreaseButton.dataset.id;
+                      if (cart[itemId] && cart[itemId].quantity > 1) {
+                          cart[itemId].quantity--;
+                          localStorage.setItem('cart', JSON.stringify(cart));
+                          updateCartModal();
+                      }
+                  });
+              });
+  
+              increaseButtons.forEach(increaseButton => {
+                  increaseButton.addEventListener('click', function() {
+                      const itemId = increaseButton.dataset.id;
+                      if (cart[itemId]) {
+                          cart[itemId].quantity++;
+                          localStorage.setItem('cart', JSON.stringify(cart));
+                          updateCartModal();
+                      }
+                  });
+              });
+  
+              removeButtons.forEach(removeButton => {
+                  removeButton.addEventListener('click', function() {
+                      const itemId = removeButton.dataset.id;
+                      if (cart[itemId]) {
+                          delete cart[itemId];
+                          localStorage.setItem('cart', JSON.stringify(cart));
+                          updateCartModal();
+                      }
+                  });
+              });
+          }
+  
+          updateCartModal();
+      });
+  </script>
+  
+</body>
+</html>
